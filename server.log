@@ -1,32 +1,4 @@
-INFO:     Will watch for changes in these directories: ['/data/data/com.termux/files/home/cloud-api']
+INFO:     Started server process [28581]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [1009] using StatReload
-INFO:     Started server process [1012]
-INFO:     Waiting for application startup.
-(trapped) error reading bcrypt version
-Traceback (most recent call last):
-  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
-    version = _bcrypt.__about__.__version__
-              ^^^^^^^^^^^^^^^^^
-AttributeError: module 'bcrypt' has no attribute '__about__'
-INFO:     Application startup complete.
-🚀 Auto-Cloud API запущен!
-INFO:     127.0.0.1:39284 - "GET /health HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:39287 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:39287 - "GET /favicon.ico HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:39287 - "GET /health HTTP/1.1" 404 Not Found
-INFO:     127.0.0.1:39287 - "GET /favicon.ico HTTP/1.1" 404 Not Found
-WARNING:  StatReload detected changes in 'main.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-INFO:     Application shutdown complete.
-INFO:     Finished server process [1012]
-INFO:     Started server process [1751]
-INFO:     Waiting for application startup.
-(trapped) error reading bcrypt version
-Traceback (most recent call last):
-  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
-    version = _bcrypt.__about__.__version__
-              ^^^^^^^^^^^^^^^^^
-AttributeError: module 'bcrypt' has no attribute '__about__'
-INFO:     Application startup complete.

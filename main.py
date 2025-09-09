@@ -87,7 +87,54 @@ async def create_todo(todo: TodoCreate):
     }
     todos_db.append(new_todo)
     return new_todo
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+import os
 
+# Создаем директорию для шаблонов
+os.makedirs("templates", exist_ok=True)
+
+@app.get("/web", response_class=HTMLResponse)
+async def web_page():
+    """Веб-страница для браузера"""
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Auto-Cloud API</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            h1 { color: #333; }
+            .endpoint { background: #f4f4f4; padding: 10px; margin: 10px 0; }
+        </style>
+    </head>
+    <body>
+        <h1>🚀 Auto-Cloud API</h1>
+        <p>Добро пожаловать в автоматическое облако!</p>
+        
+        <h2>📊 Статистика:</h2>
+        <div id="stats">Загрузка...</div>
+        
+        <h2>🔗 Доступные endpoints:</h2>
+        <div class="endpoint"><strong>GET /</strong> - Главная страница</div>
+        <div class="endpoint"><strong>GET /health</strong> - Проверка здоровья</div>
+        <div class="endpoint"><strong>GET /users</strong> - Пользователи (2)</div>
+        <div class="endpoint"><strong>GET /todos</strong> - Задачи (3)</div>
+        <div class="endpoint"><strong>GET /web</strong> - Эта страница</div>
+
+        <script>
+            fetch('/')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('stats').innerHTML = 
+                        '👥 Пользователей: ' + data.users + '<br>' +
+                        '✅ Задач: ' + data.todos + '<br>' +
+                        '📝 ' + data.message;
+                });
+        </script>
+    </body>
+    </html>
+    """
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
