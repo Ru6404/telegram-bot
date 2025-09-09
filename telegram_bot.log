@@ -1,0 +1,30 @@
+/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/__init__.py:1: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import get_distribution, DistributionNotFound
+Traceback (most recent call last):
+  File "/data/data/com.termux/files/home/cloud-api/telegram_bot.py", line 40, in <module>
+    bot = QuantumTelegramBot(TOKEN)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/home/cloud-api/telegram_bot.py", line 9, in __init__
+    self.app = Application.builder().token(token).build()
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telegram/ext/_application.py", line 462, in builder
+    return ApplicationBuilder()
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telegram/ext/_applicationbuilder.py", line 205, in __init__
+    self._job_queue: ODVInput[JobQueue] = DefaultValue(JobQueue())
+                                                       ^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/telegram/ext/_jobqueue.py", line 112, in __init__
+    self.scheduler: "AsyncIOScheduler" = AsyncIOScheduler(  # noqa: UP037
+                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/schedulers/base.py", line 87, in __init__
+    self.configure(gconfig, **options)
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/schedulers/base.py", line 126, in configure
+    self._configure(config)
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/schedulers/asyncio.py", line 48, in _configure
+    super(AsyncIOScheduler, self)._configure(config)
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/schedulers/base.py", line 697, in _configure
+    self.timezone = astimezone(config.pop('timezone', None)) or get_localzone()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/data/data/com.termux/files/usr/lib/python3.12/site-packages/apscheduler/util.py", line 93, in astimezone
+    raise TypeError('Only timezones from the pytz library are supported')
+TypeError: Only timezones from the pytz library are supported
