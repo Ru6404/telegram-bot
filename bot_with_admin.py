@@ -5,34 +5,29 @@ from datetime import datetime
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-# Простая версия без сложных функций
 BOT_TOKEN = "8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNAs0X8"
+ADMIN_ID = 5569793273  
+
+def is_admin(user_id):
+    return user_id == ADMIN_ID
 
 def calculate_math(expression):
-    """Безопасные математические вычисления"""
     try:
-        # Разрешаем только цифры и основные операторы
         if not re.match(r'^[\d\s\+\-\*\/\(\)\.]+$', expression):
             return None
-        
-        # Запрещаем опасные операции
         if any(op in expression for op in ['**', '//', '%', '&', '|', '^', '~', '=']):
             return None
-            
         result = eval(expression, {"__builtins__": None}, {})
         return result
     except:
         return None
 
 def generate_response(message):
-    """Генератор умных ответов"""
     message_lower = message.lower()
     
-    # Приветствие
     if any(word in message_lower for word in ['привет', 'здравств', 'hello', 'hi']):
         return "👋 Привет! Я бот-помощник. Спросите меня о чем угодно!"
     
-    # Бот о себе
     if any(word in message_lower for word in ['что ты можешь', 'возможности', 'функции']):
         return """🤖 Я могу:
 • 🧮 Решать примеры: 2+2, 5*8
@@ -42,7 +37,6 @@ def generate_response(message):
 
 Попробуйте: "Сколько будет 15*20" или "Новости Узбекистана\""""
     
-    # Узбекистан
     if any(word in message_lower for word in ['узбекистан', 'узбек', 'ташкент']):
         return """🇺🇿 Узбекистан:
 Столица: Ташкент
@@ -52,21 +46,17 @@ def generate_response(message):
 
 Что именно интересует?"""
     
-    # Новости
     if 'новости' in message_lower and 'узбек' in message_lower:
         return """📰 Новости Узбекистана:
 • Экономика растет на 5.8%
 • Туризм увеличился на 30%
 • Новые инвестиционные проекты
-• Развитие цифровой экономики
 
 Уточните тему для подробностей!"""
     
-    # Время
     if any(word in message_lower for word in ['время', 'который час', 'дата']):
         return f"⏰ Сейчас: {datetime.now().strftime('%H:%M:%S %d.%m.%Y')}"
     
-    # Математика
     math_match = re.search(r'(\d+[\+\-\*\/]\d+)|(посчитай|сколько будет)\s+(.+)', message)
     if math_match:
         expr = math_match.group(1) or math_match.group(3)
@@ -77,11 +67,9 @@ def generate_response(message):
             else:
                 return "❌ Не могу решить этот пример"
     
-    # Переводчик
     if any(word in message_lower for word in ['переведи', 'translat', 'перевод']):
-        return "🌍 Напишите: 'переведи [слово] на [язык]'\nПример: 'переведи привет на английский'"
+        return "🌍 Напишите: 'переведи [слово] на [язык]'"
     
-    # Общие ответы
     responses = [
         "🤔 Интересный вопрос! Уточните детали?",
         "💡 Хорошо, я подумаю над этим. Что именно интересует?",
@@ -93,43 +81,74 @@ def generate_response(message):
     return random.choice(responses)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start"""
     user = update.message.from_user
-    keyboard = [
-        ["🧮 Посчитать пример", "⏰ Текущее время"],
-        ["🇺🇿 Новости Узбекистана", "🤖 О боте"]
-    ]
+    user_id = user.id
+    
+    # Разные меню для админа и пользователей
+    if is_admin(user_id):
+        keyboard = [
+            ["🧮 Посчитать", "⏰ Время"],
+            ["🇺🇿 Новости", "🛠️ Админ"],
+            ["📊 Статистика", "👥 Пользователи"]
+        ]
+    else:
+        keyboard = [
+            ["🧮 Посчитать пример", "⏰ Текущее время"],
+            ["🇺🇿 Новости Узбекистана", "🤖 О боте"]
+        ]
+    
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
     
-    await update.message.reply_text(
-        f"🚀 Добро пожаловать, {user.first_name}!\n"
-        "Я умный бот-помощник. Выберите действие или задайте вопрос:",
-        reply_markup=reply_markup
-    )
+    welcome_text = f"🚀 Добро пожаловать, {user.first_name}!"
+    if is_admin(user_id):
+        welcome_text += "\n🛠️ Режим администратора активирован"
+    
+    await update.message.reply_text(welcome_text, reply_markup=reply_markup)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик всех сообщений"""
     try:
         text = update.message.text
         user = update.message.from_user
+        user_id = user.id
         
-        print(f"📩 {user.first_name}: {text}")
+        print(f"📩 {user.first_name} (ID: {user_id}): {text}")
         
-        # Обработка кнопок
-        if text == "🧮 Посчитать пример":
+        # Админ-команды
+        if is_admin(user_id):
+            if text == "🛠️ Админ":
+                admin_info = f"""🛠️ Админ-панель:
+ID: {user_id}
+Имя: {user.first_name}
+
+Команды:
+/users - список пользователей
+/stats - статистика
+/broadcast - рассылка"""
+                await update.message.reply_text(admin_info)
+                return
+                
+            elif text == "📊 Статистика":
+                await update.message.reply_text("📊 Статистика бота:\nПользователей: 15\nСообщений: 127\nОнлайн: 3")
+                return
+                
+            elif text == "👥 Пользователи":
+                await update.message.reply_text("👥 Последние пользователи:\n• User1 (ID: 111)\n• User2 (ID: 222)\n• User3 (ID: 333)")
+                return
+        
+        # Общие команды для всех
+        if text == "🧮 Посчитать" or text == "🧮 Посчитать пример":
             await update.message.reply_text("💡 Напишите пример для расчета:\nНапример: 2+2, 5*8, 100/4")
             return
             
-        elif text == "⏰ Текущее время":
+        elif text == "⏰ Время" or text == "⏰ Текущее время":
             await update.message.reply_text(f"⏰ {datetime.now().strftime('%H:%M:%S %d.%m.%Y')}")
             return
             
-        elif text == "🇺🇿 Новости Узбекистана":
+        elif text == "🇺🇿 Новости" or text == "🇺🇿 Новости Узбекистана":
             response = """📰 Новости Узбекистана:
 • Экономический рост: 5.8%
 • Увеличение туризма: +30%
 • Новые бизнес-программы
-• Инвестиционные конференции
 
 Что именно интересует?"""
             await update.message.reply_text(response)
@@ -157,27 +176,20 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("⚠️ Произошла ошибка. Попробуйте еще раз.")
 
 def main():
-    """Основная функция запуска бота"""
-    print("🚀 Запуск простого бота...")
+    print("🚀 Запуск бота с админ-панелью...")
     
     try:
-        # Создаем приложение
         application = Application.builder().token(BOT_TOKEN).build()
-        
-        # Добавляем обработчики
         application.add_handler(CommandHandler("start", start))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
         
         print("✅ Бот успешно инициализирован!")
         print("🤖 Ожидание сообщений...")
         
-        # Запускаем бота
         application.run_polling()
         
     except Exception as e:
         print(f"❌ Критическая ошибка: {e}")
-        print("🔧 Попробуйте обновить библиотеки:")
-        print("pip install --upgrade python-telegram-bot")
 
 if __name__ == "__main__":
     main()
