@@ -8,7 +8,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Токен бота (замените на ваш)
-BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNAs0X8')
 
 # Функция старта
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
