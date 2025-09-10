@@ -32,10 +32,10 @@ BOT_TOKEN = get_env_var("BOT_TOKEN", "8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNA
 
 # Безопасное получение ADMIN_ID
 try:
-    ADMIN_ID = int(get_env_var("ADMIN_ID", "123456789"))
+    ADMIN_ID = int(get_env_var("ADMIN_ID", "5569793273"))
 except ValueError:
     logger.warning("ADMIN_ID не является числом, использую значение по умолчанию")
-    ADMIN_ID = 123456789
+    ADMIN_ID = 5569793273
 
 # Конфигурация ИИ-сервисов
 AI_SERVICES = [
@@ -140,17 +140,35 @@ async def discover_ai_services():
     
     last_discovery_time = current_time
     return discovered_services
-
 async def ask_ai_assistant(question, user_context=None):
-    """Умный запрос к ИИ-помощнику"""
-    services = await discover_ai_services()
+    """Принудительно используем ИИ-сервер"""
+    try:
+        # ПРЯМОЙ ЗАПРОС К СЕРВЕРУ
+        payload = {
+            "question": question,
+            "context": user_context or "Telegram bot user"
+        }
+        
+        response = requests.post(
+            "http://127.0.0.1:5050/api/ai/ask",
+            json=payload,
+            timeout=5,
+            headers={"Content-Type": "application/json"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            answer = data.get("answer", "")
+            if answer:
+                return f"🤖 ИИ-помощник:\n\n{answer}"
+                
+    except Exception as e:
+        print(f"❌ Ошибка подключения к ИИ: {e}")
     
-    if services:
-        # Используем сервис с наивысшим приоритетом
-        best_service = max(services.values(), key=lambda x: x['priority'])
-        return await query_external_ai(best_service, question, user_context)
-    
+    # Fallback только если сервер недоступен
     return await smart_fallback_ai(question)
+
+    
 
 async def query_external_ai(service, question, user_context):
     """Запрос к внешнему ИИ-сервису"""
