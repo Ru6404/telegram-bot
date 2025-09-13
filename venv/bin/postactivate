@@ -1,0 +1,2 @@
+echo "🚀 Автозапуск setup_env.py"
+python $VIRTUAL_ENV/../setup_env.py
