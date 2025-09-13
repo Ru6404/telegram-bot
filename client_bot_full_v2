@@ -1,0 +1,158 @@
+import logging
+import sqlite3
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils import executor
+
+API_TOKEN = "8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNAs0X8"
+ADMIN_ID = 5569793273  # Ваш Telegram ID
+
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+
+# --- Клавиатура админа ---
+admin_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton("📋 Новые заявки"), KeyboardButton("📂 Все заявки")],
+        [KeyboardButton("➕ Добавить клиента"), KeyboardButton("✅ Принять заявку"), KeyboardButton("❌ Отклонить заявку")],
+        [KeyboardButton("🗑️ Удалить заявку"), KeyboardButton("📊 Статистика")]
+    ],
+    resize_keyboard=True
+)
+
+# --- База данных ---
+conn = sqlite3.connect("clients.db")
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS clients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_id INTEGER,
+    name TEXT,
+    username TEXT,
+    phone TEXT,
+    comment TEXT,
+    viewed INTEGER DEFAULT 0
+)
+''')
+conn.commit()
+
+# --- Команда /start ---
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("👨‍💼 Админ-панель", reply_markup=admin_keyboard)
+    else:
+        user_menu = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton("📌 Оставить заявку")],
+                [KeyboardButton("ℹ️ О нас"), KeyboardButton("📞 Связаться")]
+            ],
+            resize_keyboard=True
+        )
+        await message.answer("Добро пожаловать! Выберите действие:", reply_markup=user_menu)
+
+# --- Обработка кнопок админа ---
+@dp.message_handler(lambda message: message.from_user.id == ADMIN_ID)
+async def admin_panel(message: types.Message):
+    text = message.text
+    if text == "📋 Новые заявки":
+        cursor.execute("SELECT id, name, username, comment FROM clients WHERE viewed=0")
+        rows = cursor.fetchall()
+        if not rows:
+            await message.answer("Нет новых заявок.")
+        else:
+            msg = ""
+            for r in rows:
+                msg += f"#{r[0]} — {r[1]}, @{r[2]}\nКомментарий: {r[3]}\nПросмотрено: Нет\n\n"
+            await message.answer(msg)
+
+    elif text == "📂 Все заявки":
+        cursor.execute("SELECT id, name, username, comment, viewed FROM clients")
+        rows = cursor.fetchall()
+        msg = ""
+        for r in rows:
+            status = "Да" if r[4] else "Нет"
+            msg += f"#{r[0]} — {r[1]}, @{r[2]}\nКомментарий: {r[3]}\nПросмотрено: {status}\n\n"
+        await message.answer(msg)
+
+    elif text == "➕ Добавить клиента":
+        await message.answer("Введите имя нового клиента:")
+        dp.register_message_handler(add_client_name, state=None)
+
+    elif text == "✅ Принять заявку":
+        await message.answer("Введите ID заявки для принятия:")
+
+    elif text == "❌ Отклонить заявку":
+        await message.answer("Введите ID заявки для отклонения:")
+
+    elif text == "🗑️ Удалить заявку":
+        await message.answer("Введите ID заявки для удаления:")
+
+    elif text == "📊 Статистика":
+        cursor.execute("SELECT COUNT(*) FROM clients WHERE viewed=0")
+        new_requests = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM clients WHERE viewed=1")
+        processed = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM clients")
+        total = cursor.fetchone()[0]
+        msg = f"📊 Статистика:\nНовые заявки: {new_requests}\nОбработано: {processed}\nВсего заявок: {total}"
+        await message.answer(msg)
+
+# --- Добавление клиента ---
+async def add_client_name(message: types.Message):
+    name = message.text
+    await message.answer("Введите Telegram ID клиента:")
+    dp.register_message_handler(lambda m: add_client_telegram_id(m, name), state=None)
+
+async def add_client_telegram_id(message: types.Message, name):
+    telegram_id = int(message.text)
+    await message.answer("Введите телефон клиента:")
+    dp.register_message_handler(lambda m: add_client_phone(m, name, telegram_id), state=None)
+
+async def add_client_phone(message: types.Message, name, telegram_id):
+    phone = message.text
+    await message.answer("Введите комментарий (можно оставить пустым):")
+    dp.register_message_handler(lambda m: add_client_comment(m, name, telegram_id, phone), state=None)
+
+async def add_client_comment(message: types.Message, name, telegram_id, phone):
+    comment = message.text
+    cursor.execute("INSERT INTO clients (telegram_id, name, phone, comment) VALUES (?, ?, ?, ?)",
+                   (telegram_id, name, phone, comment))
+    conn.commit()
+    await message.answer(f"✅ Клиент {name} добавлен!")
+
+# --- Обработка клиентов ---
+@dp.message_handler(lambda message: message.from_user.id != ADMIN_ID)
+async def client_panel(message: types.Message):
+    if message.text == "📌 Оставить заявку":
+        await message.answer("Введите ваше имя:")
+        dp.register_message_handler(save_name, state=None)
+    elif message.text == "ℹ️ О нас":
+        await message.answer("Мы команда, которая работает с клиентами через Telegram-бота 🚀")
+    elif message.text == "📞 Связаться":
+        await message.answer("Связаться можно по телефону: +82-10-1234-5678")
+
+# --- Сохранение заявки ---
+async def save_name(message: types.Message):
+    name = message.text
+    telegram_id = message.from_user.id
+    username = message.from_user.username or ""
+    await message.answer(":")
+    dp.register_message_handler(lambda m: save_phone(m, name, telegram_id, username), state=None)
+
+async def save_phone(message, name, telegram_id, username):
+    phone = message.text
+    await message.answer("Введите комментарий (можно оставить пустым):")
+    dp.register_message_handler(lambda m: save_comment(m, name, telegram_id, username, phone), state=None)
+
+async def save_comment(message, name, telegram_id, username, phone):
+    comment = message.text
+    cursor.execute("INSERT INTO clients (telegram_id, name, username, phone, comment) VALUES (?, ?, ?, ?, ?)",
+                   (telegram_id, name, username, phone, comment))
+    conn.commit()
+    await message.answer("✅ Ваша заявка отправлена! Мы свяжемся с вами в ближайшее время.")
+
+# --- Запуск бота ---
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)

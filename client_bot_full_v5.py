@@ -1,0 +1,161 @@
+import logging
+import sqlite3
+import asyncio
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils import executor
+from aiogram.dispatcher.filters import Text
+import os
+
+API_TOKEN = os.getenv("BOT_TOKEN")
+ADMIN_ID = int(os.getenv("ADMIN_ID"))
+
+logging.basicConfig(level=logging.INFO)
+bot = Bot(token=API_TOKEN)
+dp = Dispatcher(bot)
+
+# Клавиатура админа
+admin_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton("📋 Новые заявки"), KeyboardButton("📂 Все заявки")],
+        [KeyboardButton("➕ Добавить клиента"), KeyboardButton("✅ Принять заявку"), KeyboardButton("❌ Отклонить заявку")],
+        [KeyboardButton("🗑️ Удалить заявку"), KeyboardButton("📊 Статистика")]
+    ],
+    resize_keyboard=True
+)
+
+# Клавиатура пользователя
+user_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton("📌 Оставить заявку")],
+        [KeyboardButton("ℹ️ О нас"), KeyboardButton("📞 Связаться")]
+    ],
+    resize_keyboard=True
+)
+
+# Инициализация базы данных
+conn = sqlite3.connect("clients.db")
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS clients (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    telegram_id INTEGER,
+    name TEXT,
+    username TEXT,
+    phone TEXT,
+    comment TEXT,
+    status TEXT DEFAULT 'new',
+    viewed INTEGER DEFAULT 0
+)
+''')
+conn.commit()
+
+# --- Команда /start ---
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    if message.from_user.id == ADMIN_ID:
+        await message.answer("👨‍💼 Админ-панель", reply_markup=admin_keyboard)
+    else:
+        await message.answer("Добро пожаловать! Выберите действие:", reply_markup=user_keyboard)
+
+# --- Пользователь оставляет заявку ---
+@dp.message_handler(Text("📌 Оставить заявку"))
+async def leave_request(message: types.Message):
+    await message.answer("Напишите ваше имя:")
+    await dp.current_state(user=message.from_user.id).set_state("name_state")
+
+@dp.message_handler(state="name_state")
+async def get_name(message: types.Message):
+    dp.current_state(user=message.from_user.id).update_data(name=message.text)
+    await message.answer("Введите ваш телефон:")
+    await dp.current_state(user=message.from_user.id).set_state("phone_state")
+
+@dp.message_handler(state="phone_state")
+async def get_phone(message: types.Message):
+    dp.current_state(user=message.from_user.id).update_data(phone=message.text)
+    data = await dp.current_state(user=message.from_user.id).get_data()
+    cursor.execute('''
+    INSERT INTO clients (telegram_id, name, username, phone)
+    VALUES (?, ?, ?, ?)
+    ''', (message.from_user.id, data["name"], message.from_user.username, data["phone"]))
+    conn.commit()
+    await message.answer("✅ Ваша заявка отправлена администратору!", reply_markup=user_keyboard)
+    await dp.current_state(user=message.from_user.id).reset_state()
+
+# --- Админ: показать новые заявки ---
+@dp.message_handler(Text("📋 Новые заявки"))
+async def new_requests(message: types.Message):
+    cursor.execute('SELECT id, name, username, phone, status FROM clients WHERE status="new"')
+    rows = cursor.fetchall()
+    if not rows:
+        await message.answer("Нет новых заявок.", reply_markup=admin_keyboard)
+        return
+    text = "📋 Новые заявки:\n\n"
+    for row in rows:
+        text += f"#{row[0]} — {row[1]}, @{row[2]}\nТелефон: {row[3]}\nСтатус: {row[4]}\n\n"
+    await message.answer(text, reply_markup=admin_keyboard)
+
+# --- Админ: принять заявку ---
+@dp.message_handler(Text("✅ Принять заявку"))
+async def accept_request(message: types.Message):
+    await message.answer("Введите ID заявки для принятия:")
+
+@dp.message_handler(lambda m: m.text.isdigit())
+async def process_accept(message: types.Message):
+    client_id = int(message.text)
+    cursor.execute('UPDATE clients SET status="accepted", viewed=1 WHERE id=?', (client_id,))
+    conn.commit()
+    await message.answer(f"Заявка #{client_id} принята ✅", reply_markup=admin_keyboard)
+
+# --- Админ: отклонить заявку ---
+@dp.message_handler(Text("❌ Отклонить заявку"))
+async def decline_request(message: types.Message):
+    await message.answer("Введите ID заявки для отклонения:")
+
+@dp.message_handler(lambda m: m.text.isdigit())
+async def process_decline(message: types.Message):
+    client_id = int(message.text)
+    cursor.execute('UPDATE clients SET status="declined", viewed=1 WHERE id=?', (client_id,))
+    conn.commit()
+    await message.answer(f"Заявка #{client_id} отклонена ❌", reply_markup=admin_keyboard)
+
+# --- Статистика ---
+@dp.message_handler(Text("📊 Статистика"))
+async def statistics(message: types.Message):
+    cursor.execute('SELECT COUNT(*) FROM clients')
+    total = cursor.fetchone()[0]
+    cursor.execute('SELECT COUNT(*) FROM clients WHERE status="new"')
+    new_count = cursor.fetchone()[0]
+    cursor.execute('SELECT COUNT(*) FROM clients WHERE status="accepted"')
+    accepted_count = cursor.fetchone()[0]
+    cursor.execute('SELECT COUNT(*) FROM clients WHERE status="declined"')
+    declined_count = cursor.fetchone()[0]
+    text = f"""
+📊 Статистика:
+Всего заявок: {total}
+Новые: {new_count}
+Принятые: {accepted_count}
+Отклоненные: {declined_count}
+"""
+    await message.answer(text, reply_markup=admin_keyboard)
+
+# --- Уведомления админа о новых заявках ---
+async def notify_admin_new_requests():
+    while True:
+        cursor.execute('SELECT id, name FROM clients WHERE status="new" AND viewed=0')
+        new_requests = cursor.fetchall()
+        for req in new_requests:
+            await bot.send_message(
+                ADMIN_ID,
+                f"📩 Новая заявка: #{req[0]} — {req[1]}"
+            )
+            cursor.execute('UPDATE clients SET viewed=1 WHERE id=?', (req[0],))
+            conn.commit()
+        await asyncio.sleep(60)
+
+# --- Запуск ---
+if __name__ == "__main__":
+    loop = asyncio.get_event_loop()
+    loop.create_task(notify_admin_new_requests())
+    print("Бот запущен...")
+    executor.start_polling(dp, skip_updates=True)
