@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Полноценный сайт</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Список клиентов</h1>
+    <ul>
+        {% for client in clients %}
+        <li>{{ client[1] }}</li>
+        {% endfor %}
+    </ul>
+
+    <h1>Заявки</h1>
+    <ul>
+        {% for req in requests %}
+        <li>{{ req[1] }} 
+            <button onclick="updateRequest({{ req[0] }}, 'accepted')">✅ Принять</button>
+            <button onclick="updateRequest({{ req[0] }}, 'rejected')">❌ Отказать</button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

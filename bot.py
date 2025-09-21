@@ -1,5 +1,27 @@
 import logging
 import sqlite3
+import os
+from dotenv import load_dotenv
+from telegram import Bot
+from telegram.ext import Updater, CommandHandler
+
+load_dotenv()  # загружаем .env
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+if not TOKEN:
+    raise ValueError("Токен не найден! Проверь .env файл.")
+
+bot = Bot(token=TOKEN)
+updater = Updater(token=TOKEN)
+
+def start(update, context):
+    update.message.reply_text("Бот работает!")
+
+updater.dispatcher.add_handler(CommandHandler("start", start))
+
+updater.start_polling()
+updater.idle()
+
 from datetime import datetime, timedelta
 from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, ConversationHandler
