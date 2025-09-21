@@ -7,8 +7,6 @@ if not TOKEN:
     print("❌ TELEGRAM_TOKEN не найден!")
     exit(1)
 
-clients = [{"id":1,"name":"Иван"},{"id":2,"name":"Мария"}]
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("👤 Клиенты", callback_data="clients")],
@@ -16,13 +14,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("✅ Принять", callback_data="accept"),
          InlineKeyboardButton("❌ Отказать", callback_data="reject")]
     ]
-    await update.message.reply_text("Выбери действие:", reply_markup=InlineKeyboardMarkup(keyboard))
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Выбери действие:", reply_markup=reply_markup)
 
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     if query.data == "clients":
-        await query.edit_message_text("📋 Клиенты:\n" + "\n".join([c["name"] for c in clients]))
+        await query.edit_message_text("📋 Список клиентов:\n1. Иван\n2. Мария")
     elif query.data == "stats":
         await query.edit_message_text("📊 Статистика пока пустая")
     elif query.data == "accept":
@@ -36,3 +35,4 @@ app.add_handler(CallbackQueryHandler(button))
 
 print("✅ Бот запущен")
 app.run_polling()
+
