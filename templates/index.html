@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Универсальный Cloud API</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>Клиенты</h1>
+<ul>
+    {% for c in clients %}
+        <li>{{c.id}}: {{c.name}}</li>
+    {% endfor %}
+</ul>
+
+<h1>Заявки</h1>
+<ul>
+    {% for r in requests %}
+        <li>
+            {% if r.status == "new" %}
+                🔵 {{r.id}}: {{r.title}} [Новая]
+            {% elif r.status == "accepted" %}
+                🟢 {{r.id}}: {{r.title}} [Принято]
+            {% elif r.status == "rejected" %}
+                🔴 {{r.id}}: {{r.title}} [Отклонено]
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+</body>
+</html>
