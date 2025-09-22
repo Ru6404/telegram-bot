@@ -1,38 +1,51 @@
-import os
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.utils import executor
+import asyncio
 
-TOKEN = os.getenv("TELEGRAM_TOKEN")
-if not TOKEN:
-    print("❌ TELEGRAM_TOKEN не найден!")
-    exit(1)
+# -------------------------------
+# Вставь сюда свой токен от BotFather
+# -------------------------------
+TELEGRAM_TOKEN = "8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNAs0X8"
 
-clients = [{"id":1,"name":"Иван"},{"id":2,"name":"Мария"}]
+bot = Bot(token=TELEGRAM_TOKEN)
+dp = Dispatcher(bot)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("👤 Клиенты", callback_data="clients")],
-        [InlineKeyboardButton("📊 Статистика", callback_data="stats")],
-        [InlineKeyboardButton("✅ Принять", callback_data="accept"),
-         InlineKeyboardButton("❌ Отказать", callback_data="reject")]
-    ]
-    await update.message.reply_text("Выбери действие:", reply_markup=InlineKeyboardMarkup(keyboard))
+# =======================
+# Кнопки снизу
+# =======================
+keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+keyboard.add(KeyboardButton("📋 Заявки"))
+keyboard.add(KeyboardButton("👥 Клиенты"))
+keyboard.add(KeyboardButton("📊 Статистика"))
+keyboard.add(KeyboardButton("✅ Принять"), KeyboardButton("❌ Отказать"))
 
-async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    if query.data == "clients":
-        await query.edit_message_text("📋 Клиенты:\n" + "\n".join([c["name"] for c in clients]))
-    elif query.data == "stats":
-        await query.edit_message_text("📊 Статистика пока пустая")
-    elif query.data == "accept":
-        await query.edit_message_text("✅ Вы приняли заявку")
-    elif query.data == "reject":
-        await query.edit_message_text("❌ Вы отклонили заявку")
+# =======================
+# Команды
+# =======================
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    await message.answer("Бот запущен! ✅", reply_markup=keyboard)
 
-app = ApplicationBuilder().token(TOKEN).build()
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CallbackQueryHandler(button))
+# =======================
+# Обработка кнопок
+# =======================
+@dp.message_handler(lambda message: message.text in ["📋 Заявки", "👥 Клиенты", "📊 Статистика",
+                                                    "✅ Принять", "❌ Отказать"])
+async def button_handler(message: types.Message):
+    if message.text == "📋 Заявки":
+        await message.answer("Список заявок...")
+    elif message.text == "👥 Клиенты":
+        await message.answer("Список клиентов...")
+    elif message.text == "📊 Статистика":
+        await message.answer("Статистика...")
+    elif message.text == "✅ Принять":
+        await message.answer("Заявка принята ✅")
+    elif message.text == "❌ Отказать":
+        await message.answer("Заявка отклонена ❌")
 
-print("✅ Бот запущен")
-app.run_polling()
+# =======================
+# Запуск
+# =======================
+if __name__ == "__main__":
+    executor.start_polling(dp, skip_updates=True)
