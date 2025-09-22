@@ -1,6 +1,5 @@
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
-from aiogram.utils import executor
 import asyncio
 
 # -------------------------------
@@ -9,29 +8,27 @@ import asyncio
 TELEGRAM_TOKEN = "8253068855:AAFPNJke9PYju90RgZe4ZOKOuuMSJNAs0X8"
 
 bot = Bot(token=TELEGRAM_TOKEN)
-dp = Dispatcher(bot)
+dp = Dispatcher()
 
-# =======================
-# Кнопки снизу
-# =======================
-keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-keyboard.add(KeyboardButton("📋 Заявки"))
-keyboard.add(KeyboardButton("👥 Клиенты"))
-keyboard.add(KeyboardButton("📊 Статистика"))
-keyboard.add(KeyboardButton("✅ Принять"), KeyboardButton("❌ Отказать"))
+# Создание клавиатуры снизу
+keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📋 Заявки")],
+        [KeyboardButton(text="👥 Клиенты")],
+        [KeyboardButton(text="📊 Статистика")],
+        [KeyboardButton(text="✅ Принять"), KeyboardButton(text="❌ Отказать")]
+    ],
+    resize_keyboard=True
+)
 
-# =======================
-# Команды
-# =======================
-@dp.message_handler(commands=["start"])
+# Команда /start
+@dp.message()
 async def start(message: types.Message):
-    await message.answer("Бот запущен! ✅", reply_markup=keyboard)
+    if message.text == "/start":
+        await message.answer("Бот запущен! ✅", reply_markup=keyboard)
 
-# =======================
 # Обработка кнопок
-# =======================
-@dp.message_handler(lambda message: message.text in ["📋 Заявки", "👥 Клиенты", "📊 Статистика",
-                                                    "✅ Принять", "❌ Отказать"])
+@dp.message()
 async def button_handler(message: types.Message):
     if message.text == "📋 Заявки":
         await message.answer("Список заявок...")
@@ -44,8 +41,9 @@ async def button_handler(message: types.Message):
     elif message.text == "❌ Отказать":
         await message.answer("Заявка отклонена ❌")
 
-# =======================
-# Запуск
-# =======================
+# Запуск бота
+async def main():
+    await dp.start_polling(bot)
+
 if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+    asyncio.run(main())
