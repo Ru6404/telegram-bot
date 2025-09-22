@@ -371,6 +371,44 @@ Sleep for 4.973954 seconds and try again... (tryings = 184, bot id = 8253068855)
 Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
 Sleep for 5.242923 seconds and try again... (tryings = 185, bot id = 8253068855)
 Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-Sleep for 4.940423 seconds and try again... (tryings = 186, bot id = 8253068855)
+Sleep for 4.947944 seconds and try again... (tryings = 186, bot id = 8253068855)
 Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
-Sleep for 4.966556 seconds and try again... (tryings = 187, bot id = 8253068855)
+Sleep for 4.949776 seconds and try again... (tryings = 187, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.135327 seconds and try again... (tryings = 188, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.897024 seconds and try again... (tryings = 189, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.785016 seconds and try again... (tryings = 190, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.049941 seconds and try again... (tryings = 191, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.104708 seconds and try again... (tryings = 192, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.088885 seconds and try again... (tryings = 193, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.014222 seconds and try again... (tryings = 194, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.012591 seconds and try again... (tryings = 195, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.060987 seconds and try again... (tryings = 196, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.008112 seconds and try again... (tryings = 197, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.108623 seconds and try again... (tryings = 198, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.976710 seconds and try again... (tryings = 199, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 5.090111 seconds and try again... (tryings = 200, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.913835 seconds and try again... (tryings = 201, bot id = 8253068855)
+Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientOSError: [Errno 103] Software caused connection abort
+Sleep for 4.917415 seconds and try again... (tryings = 202, bot id = 8253068855)
+Failed to fetch updates - TelegramNetworkError: HTTP Client says - ClientConnectorError: Cannot connect to host api.telegram.org:443 ssl:default [Network is unreachable]
+Sleep for 4.942261 seconds and try again... (tryings = 203, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.918033 seconds and try again... (tryings = 204, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.958534 seconds and try again... (tryings = 205, bot id = 8253068855)
+Failed to fetch updates - TelegramConflictError: Telegram server says - Conflict: terminated by other getUpdates request; make sure that only one bot instance is running
+Sleep for 4.780829 seconds and try again... (tryings = 206, bot id = 8253068855)
