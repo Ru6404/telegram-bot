@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    # Запуск каждые 5 минут, чтобы перезапускать бота
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -28,4 +31,6 @@ jobs:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          python bot.py
+          while true; do
+            python bot.py || sleep 10
+          done
