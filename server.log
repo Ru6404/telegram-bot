@@ -1,1 +1,7 @@
 nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/data/data/com.termux/files/home/cloud-api']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [6704] using StatReload
+INFO:     Started server process [6706]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
